@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetTracker | Oddie</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+
+<body>
+
+  <!-- INICIO DE SESIÓN -->
+  <main id="loginView" class="login-container">
+    <section class="login-card">
+      <div class="login-paw">🐾</div>
+      <h1>PetTracker</h1>
+      <p class="login-subtitle">Siempre contigo</p>
+
+      <form id="loginForm">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" required
+          placeholder="Ingresa tu correo">
+
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" required
+          placeholder="Ingresa tu contraseña">
+
+        <button type="submit">Iniciar sesión</button>
+      </form>
+
+      <p id="loginMessage" class="message"></p>
+      <p class="login-footer">Porque su seguridad importa ♥</p>
+    </section>
+  </main>
+
+
+  <!-- PANEL PRINCIPAL -->
+  <main id="dashboardView" class="dashboard hidden">
+
+    <!-- MENÚ LATERAL -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🐾</div>
+        <h2>PetTracker</h2>
+        <p>Siempre contigo</p>
+      </div>
+
+      <nav class="side-navigation">
+        <a href="#inicio" class="nav-item active">
+          <span>⌂</span> Inicio
+        </a>
+
+        <a href="#historial" class="nav-item">
+          <span>◷</span> Historial
+        </a>
+
+        <a href="#alertas" class="nav-item">
+          <span>♧</span> Alertas
+        </a>
+      </nav>
+
+      <div class="sidebar-note">
+        <div>🐾</div>
+        <p>Porque su seguridad importa ♥</p>
+      </div>
+    </aside>
+
+
+    <!-- CONTENIDO -->
+    <div class="main-content">
+
+      <header class="topbar">
+        <div>
+          <p class="topbar-subtitle">Panel de seguimiento</p>
+          <h1>¡Hola! Bienvenido a PetTracker</h1>
+        </div>
+
+        <button id="logoutButton" class="logout">
+          Cerrar sesión ↗
+        </button>
+      </header>
+
+
+      <!-- PRESENTACIÓN DE ODDIE Y MAPA -->
+      <section id="inicio" class="main-grid">
+
+        <article class="dog-card">
+
+          <div class="dog-photo">
+            <img
+              src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=700&auto=format&fit=crop&q=85"
+              alt="Perro golden retriever">
+          </div>
+
+          <div class="dog-information">
+            <div class="dog-heading">
+              <h2>Oddie</h2>
+              <span id="gpsBadge" class="status">
+                Comprobando...
+              </span>
+            </div>
+
+            <p id="deviceStatus" class="device-status">
+              Comprobando dispositivo...
+            </p>
+
+            <div class="tracking-control">
+              <div>
+                <strong>Rastreo activo</strong>
+                <p>Control del seguimiento</p>
+              </div>
+
+              <label class="switch">
+                <input type="checkbox" id="trackingSwitch">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="dog-details">
+              <div class="detail-item">
+                <span>📍</span>
+                <div>
+                  <small>Última ubicación</small>
+                  <strong id="lastUpdate">--</strong>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <span>🛰️</span>
+                <div>
+                  <small>Satélites</small>
+                  <strong id="satellites">--</strong>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <span>📡</span>
+                <div>
+                  <small>Estado GPS</small>
+                  <strong id="gpsStatus">--</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+
+        <!-- MAPA -->
+        <article class="map-card">
+          <div class="section-title">
+            <div>
+              <span class="section-icon">📍</span>
+              <div>
+                <h2>Ubicación actual</h2>
+                <p>Consulta dónde se encuentra Oddie.</p>
+              </div>
+            </div>
+
+            <button id="mapTypeButton">Ver satélite</button>
+          </div>
+
+          <div id="map"></div>
+
+          <p id="locationMessage" class="location-message">
+            Esperando ubicación del GPS...
+          </p>
+        </article>
+
+      </section>
+
+
+      <!-- ESTADOS DEL LOCALIZADOR -->
+      <section class="info-grid">
+
+        <article class="info-card">
+          <span class="info-icon">📡</span>
+          <p>Estado del GPS</p>
+          <h3 id="gpsStatusCard">Consultando...</h3>
+        </article>
+
+        <article class="info-card">
+          <span class="info-icon">🛰️</span>
+          <p>Satélites</p>
+          <h3 id="satellitesCard">--</h3>
+        </article>
+
+        <article class="info-card">
+          <span class="info-icon">📶</span>
+          <p>Conexión del dispositivo</p>
+          <h3 id="deviceStatusCard">Consultando...</h3>
+        </article>
+
+      </section>
+
+
+      <!-- HISTORIAL Y ALERTAS -->
+      <section class="lower-grid">
+
+        <article id="historial" class="history-card">
+          <div class="section-title">
+            <div>
+              <span class="section-icon">◷</span>
+              <div>
+                <h2>Historial de ubicaciones</h2>
+                <p>Últimos registros guardados de Oddie.</p>
+              </div>
+            </div>
+
+            <button id="refreshHistoryButton">
+              Actualizar
+            </button>
+          </div>
+
+          <p id="historyMessage">Cargando historial...</p>
+          <div id="historyList"></div>
+        </article>
+
+
+        <article id="alertas" class="alerts-card">
+          <div class="section-title">
+            <div>
+              <span class="section-icon">🔔</span>
+              <div>
+                <h2>Alertas</h2>
+                <p>Estado y novedades del localizador.</p>
+              </div>
+            </div>
+
+            <span class="demo-label">MODO PRUEBA</span>
+          </div>
+
+          <div id="alertList" class="alert-list">
+            <div class="alert-item alert-info">
+              <span>ℹ️</span>
+              <div>
+                <strong>Modo demostración</strong>
+                <p>Las alertas reales estarán disponibles al conectar la ESP32.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert-test-controls">
+            <p>Probar alertas:</p>
+
+            <button type="button" id="testGpsButton">
+              Simular fallo GPS
+            </button>
+
+            <button type="button" id="testDeviceButton">
+              Simular desconexión
+            </button>
+
+            <button type="button" id="resetAlertsButton">
+              Restablecer
+            </button>
+          </div>
+        </article>
+
+      </section>
+
+      <p id="generalMessage" class="message"></p>
+
+      <footer class="dashboard-footer">
+        <span>🐾 PetTracker</span>
+        <span>Cuidando a Oddie, estés donde estés.</span>
+      </footer>
+
+    </div>
+  </main>
+
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="/scripts/app.js"></script>
+
+</body>
+</html>

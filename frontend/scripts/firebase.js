@@ -1,16 +1,16 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 
 import {
   getAuth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyA4ksplj_a88UggqKXE8WjwUHYPO8sk_Kw",
+  apiKey: "AIzaSyA4kspl_j_a88UggqKXE8WjwUHYPO8sk_Kw",
   authDomain: "pettracker-36a9b.firebaseapp.com",
   projectId: "pettracker-36a9b",
   storageBucket: "pettracker-36a9b.firebasestorage.app",
@@ -28,6 +28,7 @@ const auth = getAuth(app);
 export {
   auth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut
 };

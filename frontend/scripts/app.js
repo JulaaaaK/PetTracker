@@ -1,12 +1,15 @@
-
 import {
   auth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut
 } from "./firebase.js";
 
-// Elementos de la página
+// =====================================
+// ELEMENTOS DE LA PÁGINA
+// =====================================
+
 const loginView = document.getElementById("loginView");
 const dashboardView = document.getElementById("dashboardView");
 const loginForm = document.getElementById("loginForm");
@@ -18,6 +21,12 @@ const historyList = document.getElementById("historyList");
 const historyMessage = document.getElementById("historyMessage");
 const refreshHistoryButton = document.getElementById("refreshHistoryButton");
 
+// Elementos del registro
+const showRegisterButton = document.getElementById("showRegisterButton");
+const registerForm = document.getElementById("registerForm");
+const registerMessage = document.getElementById("registerMessage");
+const showLoginButton = document.getElementById("showLoginButton");
+
 let map;
 let marker;
 let satelliteLayer;
@@ -25,7 +34,38 @@ let streetLayer;
 let showingSatellite = false;
 let refreshInterval;
 
-// Crear mapa
+// =====================================
+// MOSTRAR FORMULARIOS
+// =====================================
+
+function showRegistrationView() {
+  if (loginForm) loginForm.classList.add("hidden");
+  if (registerForm) registerForm.classList.remove("hidden");
+
+  if (loginMessage) loginMessage.textContent = "";
+  if (registerMessage) registerMessage.textContent = "";
+}
+
+function showLoginView() {
+  if (registerForm) registerForm.classList.add("hidden");
+  if (loginForm) loginForm.classList.remove("hidden");
+
+  if (loginMessage) loginMessage.textContent = "";
+  if (registerMessage) registerMessage.textContent = "";
+}
+
+if (showRegisterButton) {
+  showRegisterButton.addEventListener("click", showRegistrationView);
+}
+
+if (showLoginButton) {
+  showLoginButton.addEventListener("click", showLoginView);
+}
+
+// =====================================
+// CREAR MAPA
+// =====================================
+
 function initializeMap() {
   if (map) return;
 
@@ -48,7 +88,10 @@ function initializeMap() {
   streetLayer.addTo(map);
 }
 
-// Cambiar mapa normal y satelital
+// =====================================
+// CAMBIAR MAPA NORMAL Y SATELITAL
+// =====================================
+
 document.getElementById("mapTypeButton").addEventListener("click", () => {
   if (!map) return;
 
@@ -65,7 +108,10 @@ document.getElementById("mapTypeButton").addEventListener("click", () => {
   showingSatellite = !showingSatellite;
 });
 
-// Iniciar sesión
+// =====================================
+// INICIAR SESIÓN
+// =====================================
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -85,12 +131,82 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-// Cerrar sesión
+// =====================================
+// REGISTRAR NUEVO USUARIO
+// =====================================
+
+if (registerForm) {
+  registerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = document.getElementById("registerName").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (!name || !email || !password || !confirmPassword) {
+      registerMessage.textContent = "Completa todos los campos.";
+      return;
+    }
+
+    if (password.length < 6) {
+      registerMessage.textContent =
+        "La contraseña debe tener al menos 6 caracteres.";
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      registerMessage.textContent =
+        "Las contraseñas no coinciden.";
+      return;
+    }
+
+    registerMessage.textContent = "Creando cuenta...";
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+
+      registerMessage.textContent = "Cuenta creada correctamente.";
+
+      // Firebase inicia la sesión automáticamente.
+      // onAuthStateChanged mostrará el panel principal.
+
+    } catch (error) {
+      console.error("Error al registrar usuario:", error);
+
+      const messages = {
+        "auth/email-already-in-use":
+          "Este correo ya tiene una cuenta registrada.",
+
+        "auth/invalid-email":
+          "El correo electrónico no es válido.",
+
+        "auth/weak-password":
+          "La contraseña es demasiado débil.",
+
+        "auth/operation-not-allowed":
+          "El registro por correo no está habilitado en Firebase."
+      };
+
+      registerMessage.textContent =
+        messages[error.code] ||
+        "No se pudo crear la cuenta. Inténtalo nuevamente.";
+    }
+  });
+}
+
+// =====================================
+// CERRAR SESIÓN
+// =====================================
+
 logoutButton.addEventListener("click", async () => {
   await signOut(auth);
 });
 
-// Verificar sesión
+// =====================================
+// VERIFICAR SESIÓN
+// =====================================
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginView.classList.add("hidden");
@@ -116,10 +232,15 @@ onAuthStateChanged(auth, async (user) => {
 
     dashboardView.classList.add("hidden");
     loginView.classList.remove("hidden");
+
+    showLoginView();
   }
 });
 
-// Comunicación con el servidor
+// =====================================
+// COMUNICACIÓN CON EL SERVIDOR
+// =====================================
+
 async function apiRequest(url, options = {}) {
   const user = auth.currentUser;
 
@@ -149,6 +270,10 @@ async function apiRequest(url, options = {}) {
   return data;
 }
 
+// =====================================
+// CARGAR INFORMACIÓN DE ODDIE
+// =====================================
+
 async function loadOddieData() {
   try {
     const data = await apiRequest("/api/oddie");
@@ -160,7 +285,7 @@ async function loadOddieData() {
     // Estado del GPS en la tarjeta principal
     document.getElementById("gpsStatus").textContent = estadoGps;
 
-    // Cantidad de satélites en la tarjeta principal
+    // Cantidad de satélites
     document.getElementById("satellites").textContent = satelites;
 
     // Estado de conexión de la ESP32
@@ -186,8 +311,7 @@ async function loadOddieData() {
         ? new Date(data.lastUpdate).toLocaleTimeString()
         : "Sin registro";
 
-    // NUEVAS TARJETAS DEL DISEÑO
-
+    // Tarjetas del diseño
     document.getElementById("gpsStatusCard").textContent =
       estadoGps;
 
@@ -245,8 +369,10 @@ async function loadOddieData() {
   }
 }
 
+// =====================================
+// CONSULTAR HISTORIAL EN FIRESTORE
+// =====================================
 
-// Consultar historial en Firestore a través del servidor
 async function loadHistory() {
   historyMessage.textContent = "Cargando historial...";
   historyList.innerHTML = "";
@@ -328,10 +454,16 @@ async function loadHistory() {
   }
 }
 
-// Actualizar historial manualmente
+// =====================================
+// ACTUALIZAR HISTORIAL MANUALMENTE
+// =====================================
+
 refreshHistoryButton.addEventListener("click", loadHistory);
 
-// Activar o desactivar rastreo
+// =====================================
+// ACTIVAR O DESACTIVAR RASTREO
+// =====================================
+
 trackingSwitch.addEventListener("change", async () => {
   const desiredValue = trackingSwitch.checked;
 
